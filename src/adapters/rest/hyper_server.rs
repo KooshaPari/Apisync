@@ -1,7 +1,10 @@
 //! Hyper-based HTTP server adapter (minimal skeleton)
 
-use hyper::{Body, Request as HyperRequest, Response as HyperResponse, Server};
-use hyper::service::{make_service_fn, service_fn};
+use hyper::body::Body;
+use hyper::Request as HyperRequest;
+use hyper::Response as HyperResponse;
+use hyper::server::Server;
+use hyper::service::{service_fn, make_service_fn};
 use std::convert::Infallible;
 use crate::domain::{Request as ApiRequest, Response as ApiResponse, Endpoint};
 use std::sync::Arc;
