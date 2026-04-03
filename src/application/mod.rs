@@ -1,7 +1,7 @@
 //! Application layer - Use cases and orchestration
 
-pub mod router;
 pub mod handler;
+pub mod router;
 
-pub use router::*;
 pub use handler::*;
+pub use router::*;

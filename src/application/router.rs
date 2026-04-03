@@ -1,6 +1,6 @@
 //! Router implementation
 
-use crate::domain::{Request, Response, Endpoint};
+use crate::domain::{Endpoint, Request, Response};
 use std::collections::HashMap;
 use std::sync::Arc;
 
