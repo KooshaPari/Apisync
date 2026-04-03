@@ -24,3 +24,7 @@ clap = { version = "4.0", features = ["derive"] }
 
 [profile.release]
 opt-level = 3
+
+[[bench]]
+name = "perf"
+harness = false
