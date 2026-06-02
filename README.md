@@ -1,3 +1,6 @@
+> **Work state:** SCAFFOLD · **Progress:** `████░░░░░░ 35%`
+> Rust API-synchronization platform; scaffold + governance, dormant since early May · updated 2026-06-02
+
 # Apisync
 
 > API synchronization and integration platform
