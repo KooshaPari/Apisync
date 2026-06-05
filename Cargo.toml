@@ -1,13 +1,13 @@
 [package]
-name = "apikit"
+name = "apisync"
 version = "0.1.0"
 edition = "2021"
 description = "Universal API toolkit with REST, GraphQL, and WebSocket support"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/KooshaPari/apikit"
+repository = "https://github.com/KooshaPari/Apisync"
 
 [lib]
-name = "apikit"
+name = "apisync"
 path = "src/lib.rs"
 
 [dependencies]
