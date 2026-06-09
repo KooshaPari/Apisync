@@ -1,6 +1,3 @@
-#![feature(test)]
-extern crate test;
-
 use apikit::{Request, Response};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
@@ -37,19 +34,19 @@ fn bench_response_new(c: &mut Criterion) {
 
 fn bench_response_ok(c: &mut Criterion) {
     c.bench_function("response_ok", |b| {
-        b.iter(|| Response::ok());
+        b.iter(Response::ok);
     });
 }
 
 fn bench_response_not_found(c: &mut Criterion) {
     c.bench_function("response_not_found", |b| {
-        b.iter(|| Response::not_found());
+        b.iter(Response::not_found);
     });
 }
 
 fn bench_response_server_error(c: &mut Criterion) {
     c.bench_function("response_server_error", |b| {
-        b.iter(|| Response::server_error());
+        b.iter(Response::server_error);
     });
 }
 

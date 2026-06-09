@@ -1,5 +1,10 @@
 name: CI
+
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -9,30 +14,68 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
 jobs:
   ci:
     name: Rust CI
-    uses: KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; no live equivalent (audit 2026-06-05 found no matching file in 15 live org repos; prior candidate KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; FORK from phenoShared/.github/workflows/reusable/rust-ci.yml@72b9c6cbdb24c49189b0e7c7395d874830d1ed87)
-    with:
-      rust-version: stable
-      enable-coverage: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941
+
+      - name: Check
+        run: cargo check --all-targets
+
+      - name: Test
+        run: cargo test --all-targets
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Format
+        run: cargo fmt -- --check
+
+      - name: Audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
 
   security:
     name: Security Audit
-    uses: KooshaPari/template-commons/.github/workflows/reusable-security-scan.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; no live equivalent (audit 2026-06-05 found no matching file in 15 live org repos; prior candidate KooshaPari/template-commons/.github/workflows/reusable-security-scan.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; FORK from phenoShared/.github/workflows/reusable/security-scan.yml@72b9c6cbdb24c49189b0e7c7395d874830d1ed87)
-    with:
-      language: rust
-    secrets:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941
+
+      - name: Audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
 
   phenotype-validate:
     name: Governance Validation
-    uses: KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; no live equivalent (audit 2026-06-05 found no matching file in 15 live org repos; prior candidate KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@0000000000000000000000000000000000000000 # placeholder SHA; source 404s; FORK from PhenoDevOps@edbdfad00abfe2f691b553cce00f0fd9e3485d72)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
+      - name: Check governance files exist
+        run: |
+          set -euo pipefail
+          for f in AGENTS.md CODEOWNERS CONTRIBUTING.md LICENSE SECURITY.md; do
+            if [ -f "$f" ]; then echo "  ✓ $f"; else echo "  ✗ MISSING: $f"; exit 1; fi
+          done
