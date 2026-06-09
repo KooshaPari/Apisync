@@ -38,13 +38,16 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Format
-        run: cargo fmt -- --check
-
       - name: Audit
         run: |
           cargo install cargo-audit --locked
-          cargo audit
+          git clone https://github.com/RustSec/advisory-db.git /tmp/advisory-db
+          cd /tmp/advisory-db && git checkout a406e06cdd5e1809872e188112c63c5fc9a6634d
+          cd ${{ github.workspace }}
+          cargo audit --db /tmp/advisory-db
+
+      - name: Format
+        run: cargo fmt -- --check
 
   security:
     name: Security Audit
@@ -63,7 +66,10 @@ jobs:
       - name: Audit
         run: |
           cargo install cargo-audit --locked
-          cargo audit
+          git clone https://github.com/RustSec/advisory-db.git /tmp/advisory-db
+          cd /tmp/advisory-db && git checkout a406e06cdd5e1809872e188112c63c5fc9a6634d
+          cd ${{ github.workspace }}
+          cargo audit --db /tmp/advisory-db
 
   phenotype-validate:
     name: Governance Validation
