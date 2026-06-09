@@ -19,11 +19,13 @@ hyper-util = { version = "0.1", features = ["tokio", "server", "http1"] }
 http = "1.0"
 http-body-util = "0.1"
 bytes = "1"
-tokio = { version = "1", features = ["net", "rt", "rt-multi-thread", "macros"] }
+tokio = { version = "1", features = ["net", "rt", "rt-multi-thread", "macros", "sync"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 log = "0.4"
 async-graphql = "7"
+tokio-tungstenite = "0.24"
+futures = "0.3"
 
 [dev-dependencies]
 clap = { version = "4.0", features = ["derive"] }
