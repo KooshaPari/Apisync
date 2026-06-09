@@ -23,17 +23,23 @@ tokio = { version = "1", features = ["net", "rt", "rt-multi-thread", "macros"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 log = "0.4"
+async-graphql = "7"
 
 [dev-dependencies]
 clap = { version = "4.0", features = ["derive"] }
 criterion = { version = "0.5", features = ["html_reports"] }
 reqwest = { version = "0.12", features = ["json"] }
+proptest = "1.5"
 
 [profile.release]
 opt-level = 3
 
 [[bench]]
 name = "perf"
+harness = false
+
+[[bench]]
+name = "graphql_benchmark"
 harness = false
 
 [workspace]
