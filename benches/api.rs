@@ -1,4 +1,4 @@
-use apikit::{Request, Response};
+use apisync::{Request, Response};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn bench_request_new(c: &mut Criterion) {

@@ -1,4 +1,4 @@
-//! Main library entry point for apikit
+//! Main library entry point for apisync
 
 pub mod adapters;
 pub mod application;
