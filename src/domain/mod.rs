@@ -78,6 +78,87 @@ impl<E: Endpoint + Send + Sync> Endpoint for Box<E> {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Item {
+    pub id: u64,
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateItem {
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateItem {
+    pub name: Option<String>,
+    pub description: Option<String>,
+}
+
+pub struct ItemStore {
+    items: std::sync::Mutex<std::collections::HashMap<u64, Item>>,
+    next_id: std::sync::Mutex<u64>,
+}
+
+impl Default for ItemStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ItemStore {
+    pub fn new() -> Self {
+        Self {
+            items: std::sync::Mutex::new(std::collections::HashMap::new()),
+            next_id: std::sync::Mutex::new(1),
+        }
+    }
+
+    pub fn list(&self) -> Vec<Item> {
+        let items = self.items.lock().unwrap();
+        let mut result: Vec<Item> = items.values().cloned().collect();
+        result.sort_by_key(|item| item.id);
+        result
+    }
+
+    pub fn get(&self, id: u64) -> Option<Item> {
+        let items = self.items.lock().unwrap();
+        items.get(&id).cloned()
+    }
+
+    pub fn create(&self, create: CreateItem) -> Item {
+        let mut next_id = self.next_id.lock().unwrap();
+        let id = *next_id;
+        *next_id += 1;
+
+        let item = Item { id, name: create.name, description: create.description };
+
+        let mut items = self.items.lock().unwrap();
+        items.insert(id, item.clone());
+        item
+    }
+
+    pub fn update(&self, id: u64, update: UpdateItem) -> Option<Item> {
+        let mut items = self.items.lock().unwrap();
+        items.get_mut(&id).map(|item| {
+            if let Some(name) = update.name {
+                item.name = name;
+            }
+            if let Some(description) = update.description {
+                item.description = description;
+            }
+            item.clone()
+        })
+    }
+
+    pub fn delete(&self, id: u64) -> Option<Item> {
+        let mut items = self.items.lock().unwrap();
+        items.remove(&id)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

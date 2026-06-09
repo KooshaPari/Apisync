@@ -15,14 +15,19 @@ async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 hyper = { version = "1.0", features = ["full"] }
+hyper-util = { version = "0.1", features = ["tokio", "server", "http1"] }
 http = "1.0"
+http-body-util = "0.1"
+bytes = "1"
+tokio = { version = "1", features = ["net", "rt", "rt-multi-thread", "macros"] }
 tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 log = "0.4"
 
 [dev-dependencies]
 clap = { version = "4.0", features = ["derive"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 criterion = { version = "0.5", features = ["html_reports"] }
+reqwest = { version = "0.12", features = ["json"] }
 
 [profile.release]
 opt-level = 3

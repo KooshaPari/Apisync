@@ -1,6 +1,7 @@
 //! Router implementation
 
 use crate::domain::{Endpoint, Request, Response};
+use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -29,5 +30,12 @@ impl Router {
         } else {
             crate::domain::Response::not_found()
         }
+    }
+}
+
+#[async_trait]
+impl Endpoint for Router {
+    async fn handle(&self, req: Request) -> Response {
+        Router::handle(self, req).await
     }
 }
