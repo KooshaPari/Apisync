@@ -36,6 +36,12 @@ tasks:
     cmds:
       - cargo bench
 
+  clean:
+    desc: "Remove build artifacts"
+    cmds:
+      - cargo clean
+      - rm -rf target
+
   default:
     desc: "Run the full quality gate (build, lint, test)"
     cmds:
