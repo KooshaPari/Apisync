@@ -1,6 +1,17 @@
 > **Work state:** SCAFFOLD · **Progress:** `████░░░░░░ 35%`
 > Rust API-synchronization platform; scaffold + governance, dormant since early May · updated 2026-06-02
 
+## Work State
+
+| Field | Value |
+|---|---|
+| Last commit | 2026-06-08 |
+| Open issues | 4 |
+| Open PRs | 0 |
+| Focus | API synchronization platform (scaffold) |
+
+Progress: ███░░░░░░░ 35%
+
 # Apisync
 
 > API synchronization and integration platform
