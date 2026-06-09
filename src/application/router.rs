@@ -8,6 +8,12 @@ pub struct Router {
     routes: HashMap<String, Arc<dyn Endpoint>>,
 }
 
+impl Default for Router {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Router {
     pub fn new() -> Self {
         Self { routes: HashMap::new() }

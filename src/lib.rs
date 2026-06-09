@@ -13,6 +13,12 @@ pub use infrastructure::*;
 /// Main library entry point (placeholder)
 pub struct ApiKit;
 
+impl Default for ApiKit {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ApiKit {
     pub fn new() -> Self {
         ApiKit
