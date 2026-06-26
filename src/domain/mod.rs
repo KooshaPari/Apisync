@@ -2,9 +2,8 @@
 
 pub mod middleware;
 
-pub use middleware::{Middleware, Next};
-
 use async_trait::async_trait;
+pub use middleware::{Middleware, Next};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

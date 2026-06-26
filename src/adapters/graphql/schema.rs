@@ -20,11 +20,7 @@ pub struct GraphItem {
 
 impl From<Item> for GraphItem {
     fn from(item: Item) -> Self {
-        Self {
-            id: ID(item.id.to_string()),
-            name: item.name,
-            description: item.description,
-        }
+        Self { id: ID(item.id.to_string()), name: item.name, description: item.description }
     }
 }
 
@@ -37,10 +33,7 @@ pub struct CreateGraphItem {
 
 impl From<CreateGraphItem> for CreateItem {
     fn from(input: CreateGraphItem) -> Self {
-        Self {
-            name: input.name,
-            description: input.description,
-        }
+        Self { name: input.name, description: input.description }
     }
 }
 
@@ -53,10 +46,7 @@ pub struct UpdateGraphItem {
 
 impl From<UpdateGraphItem> for UpdateItem {
     fn from(input: UpdateGraphItem) -> Self {
-        Self {
-            name: input.name,
-            description: input.description,
-        }
+        Self { name: input.name, description: input.description }
     }
 }
 
@@ -75,10 +65,7 @@ impl QueryRoot {
 impl QueryRoot {
     /// Fetch a single item by id.
     async fn item(&self, id: ID) -> Option<GraphItem> {
-        id.parse::<u64>()
-            .ok()
-            .and_then(|id| self.store.get(id))
-            .map(Into::into)
+        id.parse::<u64>().ok().and_then(|id| self.store.get(id)).map(Into::into)
     }
 
     /// List all items.
@@ -107,18 +94,12 @@ impl MutationRoot {
 
     /// Update an existing item.
     async fn update_item(&self, id: ID, input: UpdateGraphItem) -> Option<GraphItem> {
-        id.parse::<u64>()
-            .ok()
-            .and_then(|id| self.store.update(id, input.into()))
-            .map(Into::into)
+        id.parse::<u64>().ok().and_then(|id| self.store.update(id, input.into())).map(Into::into)
     }
 
     /// Delete an existing item.
     async fn delete_item(&self, id: ID) -> Option<GraphItem> {
-        id.parse::<u64>()
-            .ok()
-            .and_then(|id| self.store.delete(id))
-            .map(Into::into)
+        id.parse::<u64>().ok().and_then(|id| self.store.delete(id)).map(Into::into)
     }
 }
 
@@ -138,9 +119,7 @@ impl SubscriptionRoot {
     /// Stream the current list of items.
     async fn items_stream(&self) -> BoxStream<'static, Vec<GraphItem>> {
         let items: Vec<GraphItem> = self.store.list().into_iter().map(Into::into).collect();
-        async_graphql::futures_util::stream::iter(items)
-            .map(|item| vec![item])
-            .boxed()
+        async_graphql::futures_util::stream::iter(items).map(|item| vec![item]).boxed()
     }
 }
 
@@ -163,10 +142,7 @@ pub async fn execute_query(schema: &GraphQLSchema, query: &str) -> async_graphql
 }
 
 /// Execute a GraphQL mutation against the provided schema.
-pub async fn execute_mutation(
-    schema: &GraphQLSchema,
-    mutation: &str,
-) -> async_graphql::Response {
+pub async fn execute_mutation(schema: &GraphQLSchema, mutation: &str) -> async_graphql::Response {
     schema.execute(mutation).await
 }
 
@@ -209,7 +185,7 @@ mod tests {
         let json = serde_json::to_value(&res).unwrap();
         let id = json["data"]["createItem"]["id"].as_str().unwrap();
 
-        let query = format!("{{ item(id: \"{}\") {{ id name description }} }}", id);
+        let query = format!("{{ item(id: \"{id}\") {{ id name description }} }}");
         let res = execute_query(&schema, &query).await;
         assert!(res.is_ok());
         let json = serde_json::to_value(&res).unwrap();
@@ -235,8 +211,7 @@ mod tests {
         let id = json["data"]["createItem"]["id"].as_str().unwrap();
 
         let update = format!(
-            r#"mutation {{ updateItem(id: "{}", input: {{ name: "New" }}) {{ id name description }} }}"#,
-            id
+            r#"mutation {{ updateItem(id: "{id}", input: {{ name: "New" }}) {{ id name description }} }}"#
         );
         let res = execute_mutation(&schema, &update).await;
         assert!(res.is_ok());
@@ -254,14 +229,14 @@ mod tests {
         let json = serde_json::to_value(&res).unwrap();
         let id = json["data"]["createItem"]["id"].as_str().unwrap();
 
-        let delete = format!(r#"mutation {{ deleteItem(id: "{}") {{ id name description }} }}"#, id);
+        let delete = format!(r#"mutation {{ deleteItem(id: "{id}") {{ id name description }} }}"#);
         let res = execute_mutation(&schema, &delete).await;
         assert!(res.is_ok());
         let json = serde_json::to_value(&res).unwrap();
         let item = &json["data"]["deleteItem"];
         assert_eq!(item["name"], "Delete Me");
 
-        let query = format!("{{ item(id: \"{}\") {{ id name description }} }}", id);
+        let query = format!("{{ item(id: \"{id}\") {{ id name description }} }}");
         let res = execute_query(&schema, &query).await;
         let json = serde_json::to_value(&res).unwrap();
         assert!(json["data"]["item"].is_null());
@@ -270,7 +245,8 @@ mod tests {
     #[tokio::test]
     async fn test_subscription_items_stream() {
         let schema = setup_schema();
-        let request = async_graphql::Request::new("subscription { itemsStream { id name description } }");
+        let request =
+            async_graphql::Request::new("subscription { itemsStream { id name description } }");
         let mut stream = schema.execute_stream(request);
         let mut count = 0;
         while let Some(response) = stream.next().await {
@@ -280,4 +256,3 @@ mod tests {
         assert_eq!(count, 0); // Empty store yields empty stream
     }
 }
-

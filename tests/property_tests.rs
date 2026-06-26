@@ -1,9 +1,10 @@
 //! Property-based tests for domain models using proptest
 
-use apisync::domain::{CreateItem, ItemStore, UpdateItem};
-use proptest::prelude::*;
 use std::sync::Arc;
 use std::thread;
+
+use apisync::domain::{CreateItem, ItemStore, UpdateItem};
+use proptest::prelude::*;
 
 proptest! {
     /// Property 1: Item creation with random data preserves all fields
