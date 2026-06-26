@@ -1,7 +1,8 @@
 //! Middleware traits and implementations
 
-use crate::domain::{Request, Response};
 use async_trait::async_trait;
+
+use crate::domain::{Request, Response};
 
 /// Middleware trait
 #[async_trait]

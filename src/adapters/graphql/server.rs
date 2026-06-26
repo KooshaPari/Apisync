@@ -4,9 +4,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use crate::domain::{Endpoint, Request, Response};
-
 use super::schema::GraphQLSchema;
+use crate::domain::{Endpoint, Request, Response};
 
 /// HTTP endpoint that serves GraphQL queries and mutations.
 pub struct GraphQLEndpoint {
@@ -62,9 +61,7 @@ impl Endpoint for GraphQLEndpoint {
                 Err(_) => return Response::server_error(),
             };
 
-            Response::ok()
-                .with_header("Content-Type", "application/json")
-                .with_body(json)
+            Response::ok().with_header("Content-Type", "application/json").with_body(json)
         } else if req.method == "GET" {
             let html = r#"<!DOCTYPE html>
 <html>
@@ -149,4 +146,3 @@ mod tests {
         assert_eq!(res.status, 400);
     }
 }
-

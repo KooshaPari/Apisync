@@ -1,9 +1,11 @@
 //! Router implementation
 
-use crate::domain::{Endpoint, Request, Response};
-use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+use async_trait::async_trait;
+
+use crate::domain::{Endpoint, Request, Response};
 
 pub struct Router {
     routes: HashMap<String, Arc<dyn Endpoint>>,

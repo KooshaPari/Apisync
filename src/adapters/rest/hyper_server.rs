@@ -206,14 +206,16 @@ fn error_response(status: StatusCode, message: &str) -> HyperResponse<Full<Bytes
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::domain::{Endpoint, Request, Response};
-    use crate::Router;
-    use async_trait::async_trait;
     use std::time::Duration;
+
+    use async_trait::async_trait;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpStream;
     use tokio::time::timeout;
+
+    use super::*;
+    use crate::domain::{Endpoint, Request, Response};
+    use crate::Router;
 
     /// Endpoint that echoes the HTTP method and path back.
     #[derive(Clone)]
@@ -291,8 +293,8 @@ mod tests {
         .await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("200 OK"), "response: {}", response_str);
-        assert!(response_str.contains("GET /hello"), "response: {}", response_str);
+        assert!(response_str.contains("200 OK"), "response: {response_str}");
+        assert!(response_str.contains("GET /hello"), "response: {response_str}");
 
         server_task.await.unwrap();
     }
@@ -323,8 +325,8 @@ mod tests {
         let response = send_request(bound, &request).await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("200 OK"), "response: {}", response_str);
-        assert!(response_str.contains(body), "response: {}", response_str);
+        assert!(response_str.contains("200 OK"), "response: {response_str}");
+        assert!(response_str.contains(body), "response: {response_str}");
 
         server_task.await.unwrap();
     }
@@ -347,8 +349,8 @@ mod tests {
         .await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("200 OK"), "response: {}", response_str);
-        assert!(response_str.contains("updated /items/1"), "response: {}", response_str);
+        assert!(response_str.contains("200 OK"), "response: {response_str}");
+        assert!(response_str.contains("updated /items/1"), "response: {response_str}");
 
         server_task.await.unwrap();
     }
@@ -371,8 +373,8 @@ mod tests {
         .await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("200 OK"), "response: {}", response_str);
-        assert!(response_str.contains("deleted /items/1"), "response: {}", response_str);
+        assert!(response_str.contains("200 OK"), "response: {response_str}");
+        assert!(response_str.contains("deleted /items/1"), "response: {response_str}");
 
         server_task.await.unwrap();
     }
@@ -403,7 +405,7 @@ mod tests {
         .await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("404"), "response: {}", response_str);
+        assert!(response_str.contains("404"), "response: {response_str}");
 
         server_task.await.unwrap();
     }
@@ -429,8 +431,8 @@ mod tests {
         .await;
         let response_str = String::from_utf8_lossy(&response);
 
-        assert!(response_str.contains("200 OK"), "response: {}", response_str);
-        assert!(response_str.contains("created /users"), "response: {}", response_str);
+        assert!(response_str.contains("200 OK"), "response: {response_str}");
+        assert!(response_str.contains("created /users"), "response: {response_str}");
 
         server_task.await.unwrap();
     }

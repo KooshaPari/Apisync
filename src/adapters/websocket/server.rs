@@ -93,18 +93,10 @@ impl WebSocketServer {
     /// # Errors
     ///
     /// Returns an error if the underlying `TcpListener` fails to bind.
-    pub async fn new(
-        addr: SocketAddr,
-        store: Arc<ItemStore>,
-    ) -> Result<Self, std::io::Error> {
+    pub async fn new(addr: SocketAddr, store: Arc<ItemStore>) -> Result<Self, std::io::Error> {
         let listener = TcpListener::bind(addr).await?;
         let hub = BroadcastHub::new(1024);
-        Ok(Self {
-            listener,
-            hub,
-            store,
-            client_counter: AtomicU64::new(1),
-        })
+        Ok(Self { listener, hub, store, client_counter: AtomicU64::new(1) })
     }
 
     /// Return the local socket address the server is bound to.
@@ -117,12 +109,7 @@ impl WebSocketServer {
     /// Each connection is handled in its own spawned task so the server can
     /// accept new connections concurrently.
     pub async fn run(self) -> Result<(), std::io::Error> {
-        let Self {
-            listener,
-            hub,
-            store,
-            client_counter,
-        } = self;
+        let Self { listener, hub, store, client_counter } = self;
         let hub = Arc::new(hub);
         let local_addr = listener.local_addr()?;
         info!("WebSocket server listening on ws://{}", local_addr);
@@ -197,26 +184,18 @@ async fn handle_connection(
     let read_task = tokio::spawn(async move {
         while let Some(result) = read.next().await {
             match result {
-                Ok(Message::Text(text)) => {
-                    match serde_json::from_str::<WsMessage>(&text) {
-                        Ok(ws_msg) => {
-                            if let Err(e) =
-                                process_message(ws_msg, &store, &hub_for_read).await
-                            {
-                                let err_msg = WsMessage::Error {
-                                    message: e.to_string(),
-                                };
-                                let _ = hub_for_read.broadcast(err_msg);
-                            }
-                        }
-                        Err(e) => {
-                            let err_msg = WsMessage::Error {
-                                message: format!("Invalid message: {}", e),
-                            };
+                Ok(Message::Text(text)) => match serde_json::from_str::<WsMessage>(&text) {
+                    Ok(ws_msg) => {
+                        if let Err(e) = process_message(ws_msg, &store, &hub_for_read).await {
+                            let err_msg = WsMessage::Error { message: e.to_string() };
                             let _ = hub_for_read.broadcast(err_msg);
                         }
                     }
-                }
+                    Err(e) => {
+                        let err_msg = WsMessage::Error { message: format!("Invalid message: {e}") };
+                        let _ = hub_for_read.broadcast(err_msg);
+                    }
+                },
                 Ok(Message::Close(_)) => break,
                 Err(e) => {
                     error!("WebSocket read error for client {}: {}", client_id, e);
@@ -259,24 +238,18 @@ async fn process_message(
                     hub.broadcast(WsMessage::ItemUpdated { item })?;
                 }
                 None => {
-                    hub.broadcast(WsMessage::Error {
-                        message: format!("Item {} not found", id),
-                    })?;
+                    hub.broadcast(WsMessage::Error { message: format!("Item {id} not found") })?;
                 }
             }
         }
-        WsMessage::DeleteItem { id } => {
-            match store.delete(id) {
-                Some(_) => {
-                    hub.broadcast(WsMessage::ItemDeleted { id })?;
-                }
-                None => {
-                    hub.broadcast(WsMessage::Error {
-                        message: format!("Item {} not found", id),
-                    })?;
-                }
+        WsMessage::DeleteItem { id } => match store.delete(id) {
+            Some(_) => {
+                hub.broadcast(WsMessage::ItemDeleted { id })?;
             }
-        }
+            None => {
+                hub.broadcast(WsMessage::Error { message: format!("Item {id} not found") })?;
+            }
+        },
         WsMessage::Subscribe { topic } => {
             info!("Client subscribed to topic: {}", topic);
         }
@@ -327,9 +300,7 @@ impl Endpoint for WebSocketEndpoint {
                     .with_body(info.to_string().into_bytes())
             }
             ("POST", "/ws/broadcast") => {
-                let body = req
-                    .body
-                    .and_then(|b| serde_json::from_slice::<WsMessage>(&b).ok());
+                let body = req.body.and_then(|b| serde_json::from_slice::<WsMessage>(&b).ok());
                 match body {
                     Some(msg) => {
                         let _ = self.hub.broadcast(msg);
@@ -343,9 +314,7 @@ impl Endpoint for WebSocketEndpoint {
             ("GET", "/ws/items") => {
                 let items = self.store.list();
                 let body = serde_json::to_vec(&items).unwrap_or_default();
-                Response::ok()
-                    .with_header("Content-Type", "application/json")
-                    .with_body(body)
+                Response::ok().with_header("Content-Type", "application/json").with_body(body)
             }
             _ => Response::not_found(),
         }
@@ -354,20 +323,19 @@ impl Endpoint for WebSocketEndpoint {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tokio::time::{timeout, Duration};
     use tokio_tungstenite::connect_async;
+
+    use super::*;
 
     /// Helper that binds a WebSocket server on a random port and returns the
     /// bound address together with the hub so tests can broadcast.
     async fn setup_ws_server() -> (SocketAddr, Arc<BroadcastHub>, Arc<ItemStore>) {
         let store = Arc::new(ItemStore::new());
-        let server = WebSocketServer::new(
-            SocketAddr::from(([127, 0, 0, 1], 0)),
-            Arc::clone(&store),
-        )
-        .await
-        .unwrap();
+        let server =
+            WebSocketServer::new(SocketAddr::from(([127, 0, 0, 1], 0)), Arc::clone(&store))
+                .await
+                .unwrap();
         let addr = server.local_addr().unwrap();
         let hub = Arc::new(server.hub.clone());
         let store = server.store.clone();
@@ -385,39 +353,26 @@ mod tests {
     #[tokio::test]
     async fn test_websocket_connection_and_broadcast() {
         let (addr, hub, _store) = setup_ws_server().await;
-        let url = format!("ws://{}/ws/items", addr);
+        let url = format!("ws://{addr}/ws/items");
 
         let (mut ws, _) = connect_async(&url).await.expect("failed to connect");
 
         // Read the `Connected` message.
-        let msg = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
         let text = msg.to_text().unwrap();
         let connected: WsMessage = serde_json::from_str(text).unwrap();
         assert!(
             matches!(connected, WsMessage::Connected { .. }),
-            "expected Connected message, got: {:?}",
-            connected
+            "expected Connected message, got: {connected:?}"
         );
 
         // Broadcast an item from the server side.
-        let item = Item {
-            id: 1,
-            name: "Test Item".to_string(),
-            description: "A test item".to_string(),
-        };
-        hub.broadcast(WsMessage::ItemCreated { item: item.clone() })
-            .unwrap();
+        let item =
+            Item { id: 1, name: "Test Item".to_string(), description: "A test item".to_string() };
+        hub.broadcast(WsMessage::ItemCreated { item: item.clone() }).unwrap();
 
         // Receive the broadcasted item.
-        let msg = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
         let text = msg.to_text().unwrap();
         let received: WsMessage = serde_json::from_str(text).unwrap();
         assert_eq!(received, WsMessage::ItemCreated { item });
@@ -426,16 +381,12 @@ mod tests {
     #[tokio::test]
     async fn test_websocket_create_item() {
         let (addr, _hub, store) = setup_ws_server().await;
-        let url = format!("ws://{}/ws/items", addr);
+        let url = format!("ws://{addr}/ws/items");
 
         let (mut ws, _) = connect_async(&url).await.expect("failed to connect");
 
         // Skip Connected message.
-        let _ = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let _ = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
 
         // Send a CreateItem message.
         let create = WsMessage::CreateItem {
@@ -446,17 +397,12 @@ mod tests {
         ws.send(Message::Text(json)).await.unwrap();
 
         // Receive the broadcasted ItemCreated.
-        let msg = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
         let text = msg.to_text().unwrap();
         let received: WsMessage = serde_json::from_str(text).unwrap();
         assert!(
             matches!(received, WsMessage::ItemCreated { .. }),
-            "expected ItemCreated, got: {:?}",
-            received
+            "expected ItemCreated, got: {received:?}"
         );
 
         // Verify the store was updated.
@@ -485,11 +431,8 @@ mod tests {
         let store = Arc::new(ItemStore::new());
         let endpoint = WebSocketEndpoint::new(Arc::clone(&hub), Arc::clone(&store));
 
-        let item = Item {
-            id: 1,
-            name: "Broadcasted".to_string(),
-            description: "Via REST".to_string(),
-        };
+        let item =
+            Item { id: 1, name: "Broadcasted".to_string(), description: "Via REST".to_string() };
         let msg = WsMessage::ItemCreated { item: item.clone() };
         let body = serde_json::to_vec(&msg).unwrap();
         let req = Request::new("/ws/broadcast", "POST").with_body(body);
@@ -505,10 +448,7 @@ mod tests {
     async fn test_websocket_endpoint_items() {
         let hub = Arc::new(BroadcastHub::new(16));
         let store = Arc::new(ItemStore::new());
-        store.create(CreateItem {
-            name: "Foo".to_string(),
-            description: "Bar".to_string(),
-        });
+        store.create(CreateItem { name: "Foo".to_string(), description: "Bar".to_string() });
         let endpoint = WebSocketEndpoint::new(Arc::clone(&hub), Arc::clone(&store));
 
         let req = Request::new("/ws/items", "GET");
@@ -537,11 +477,7 @@ mod tests {
         let mut rx1 = hub.subscribe();
         let mut rx2 = hub.subscribe();
 
-        let item = Item {
-            id: 1,
-            name: "Multi".to_string(),
-            description: "Cast".to_string(),
-        };
+        let item = Item { id: 1, name: "Multi".to_string(), description: "Cast".to_string() };
         hub.broadcast(WsMessage::ItemCreated { item: item.clone() }).unwrap();
 
         let msg1 = rx1.recv().await.unwrap();
@@ -553,22 +489,15 @@ mod tests {
     #[tokio::test]
     async fn test_websocket_get_items() {
         let (addr, _hub, store) = setup_ws_server().await;
-        let url = format!("ws://{}/ws/items", addr);
+        let url = format!("ws://{addr}/ws/items");
 
         // Pre-populate the store.
-        store.create(CreateItem {
-            name: "Pre".to_string(),
-            description: "Loaded".to_string(),
-        });
+        store.create(CreateItem { name: "Pre".to_string(), description: "Loaded".to_string() });
 
         let (mut ws, _) = connect_async(&url).await.expect("failed to connect");
 
         // Skip Connected message.
-        let _ = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let _ = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
 
         // Send GetItems.
         let get = WsMessage::GetItems;
@@ -576,17 +505,12 @@ mod tests {
         ws.send(Message::Text(json)).await.unwrap();
 
         // Receive the ItemCreated broadcast for the pre-loaded item.
-        let msg = timeout(Duration::from_secs(1), ws.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
+        let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
         let text = msg.to_text().unwrap();
         let received: WsMessage = serde_json::from_str(text).unwrap();
         assert!(
             matches!(received, WsMessage::ItemCreated { .. }),
-            "expected ItemCreated, got: {:?}",
-            received
+            "expected ItemCreated, got: {received:?}"
         );
     }
 }
