@@ -1,3 +1,16 @@
+> **Work state:** DOCS POLISH · **Progress:** `██████░░░░` 60%
+
+Apisync is a Rust API toolkit for building REST, GraphQL, and WebSocket services with async-first handlers, tower-style middleware, and type-safe routing. It is designed as a foundation for API synchronization and integration workflows, with a compact core that keeps REST, schema, and connection-management concerns aligned in one library.
+
+## Usage / Quickstart
+
+```bash
+cargo build
+cargo test
+```
+
+Use `src/rest.rs` for REST routing, `src/graphql.rs` for schema and resolvers, `src/ws.rs` for WebSocket connection management, and `src/middleware.rs` for tower layers such as auth, logging, and CORS.
+
 <!-- AI-DD-META:START -->
 <!-- This repository is planned, maintained, and managed by AI Agents only. -->
 <!-- Slop issues are expected and intentionally present as part of an HITL-less -->
