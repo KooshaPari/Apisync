@@ -29,24 +29,16 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941 # v2
 
-      - name: Check
-        run: cargo check --all-targets
+      - name: Cargo check
+        run: cargo check --all-targets --verbose
 
-      - name: Test
-        run: cargo test --all-targets
+      - name: Cargo test
+        run: cargo test --all-targets --verbose
 
-      - name: Clippy
+      - name: Cargo clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Audit
-        run: |
-          cargo install cargo-audit --locked
-          git clone https://github.com/RustSec/advisory-db.git /tmp/advisory-db
-          cd /tmp/advisory-db && git checkout a406e06cdd5e1809872e188112c63c5fc9a6634d
-          cd ${{ github.workspace }}
-          cargo audit --db /tmp/advisory-db
-
-      - name: Format
+      - name: Cargo fmt check
         run: cargo fmt -- --check
 
   security:
@@ -63,13 +55,8 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941 # v2
 
-      - name: Audit
-        run: |
-          cargo install cargo-audit --locked
-          git clone https://github.com/RustSec/advisory-db.git /tmp/advisory-db
-          cd /tmp/advisory-db && git checkout a406e06cdd5e1809872e188112c63c5fc9a6634d
-          cd ${{ github.workspace }}
-          cargo audit --db /tmp/advisory-db
+      - name: Cargo audit (RustSec)
+        run: cargo audit --deny warnings
 
   phenotype-validate:
     name: Governance Validation
@@ -80,8 +67,16 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
 
       - name: Check governance files exist
+        shell: bash
         run: |
           set -euo pipefail
+          missing=0
           for f in AGENTS.md CODEOWNERS CONTRIBUTING.md LICENSE SECURITY.md; do
-            if [ -f "$f" ]; then echo "  ✓ $f"; else echo "  ✗ MISSING: $f"; exit 1; fi
+            if [ -f "$f" ]; then
+              echo "✓ $f"
+            else
+              echo "✗ MISSING: $f"
+              missing=1
+            fi
           done
+          exit $missing
