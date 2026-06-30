@@ -1,5 +1,7 @@
 name: Coverage
 on:
+  push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -9,7 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-on: [push, pull_request]
 jobs:
   coverage:
     runs-on: ubuntu-24.04
