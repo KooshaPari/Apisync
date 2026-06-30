@@ -12,7 +12,8 @@ fn bench_request_with_headers(c: &mut Criterion) {
         b.iter(|| {
             Request::new(black_box("/users"), black_box("GET"))
                 .with_header(black_box("Content-Type"), black_box("application/json"))
-                .with_header(black_box("Authorization"), black_box("Bearer token"))
+                // Use a non-secret placeholder so secret scanners do not flag this benchmark.
+                .with_header(black_box("Authorization"), black_box("Bearer example-token"))
         });
     });
 }
