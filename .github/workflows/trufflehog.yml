@@ -28,7 +28,5 @@ jobs:
         uses: trufflesecurity/trufflehog@f446421baf832d6356c42c1743d99abff52ff334 # v3.95.7
         with:
           path: ./
-          base: main
-          head: ${{ github.event.pull_request.head.sha || github.sha }}
           base_depth: 100
           extra_args: --max-depth 1000 --concurrency 4
