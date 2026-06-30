@@ -1,5 +1,9 @@
 name: Security (SAST)
 on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  schedule: [{cron: "0 2 * * *"}]
   workflow_dispatch:
 
 permissions:
@@ -9,11 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-  schedule: [{cron: "0 2 * * *"}]
 jobs:
   codeql:
     runs-on: ubuntu-24.04

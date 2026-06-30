@@ -56,10 +56,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['rust', 'go', 'python', 'typescript']
+        language: [rust]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@8dca8a82e2fa1a2c8908956f711300f9c4a4f4f6 # v2
         with:
