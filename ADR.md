@@ -1,5 +1,9 @@
 # Architecture Decision Records — apikit
 
+> **Canonical ADR location:** `docs/adr/*.md` (one file per decision, rendered by VitePress).
+> This root `ADR.md` is kept as a quick-reference summary. If the two diverge,
+> `docs/adr/` wins — do not add new decisions here; add them to `docs/adr/` only.
+
 ## ADR-001: Hexagonal Internal Layout
 
 **Status:** Accepted
