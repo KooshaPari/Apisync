@@ -17,7 +17,7 @@ concurrency:
 jobs:
   ci:
     name: Rust CI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -43,7 +43,7 @@ jobs:
 
   security:
     name: Security Audit
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -60,7 +60,7 @@ jobs:
 
   phenotype-validate:
     name: Governance Validation
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout
