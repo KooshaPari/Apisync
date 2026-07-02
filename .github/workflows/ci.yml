@@ -58,7 +58,9 @@ jobs:
       - name: Cargo audit (RustSec)
         run: cargo audit --deny warnings
 
-  phenotype-validate:
+  trace-gate:
+    name: FR Coverage Gate
+    uses: KooshaPari/phenotype-pm-core/.github/workflows/trace-gate.yml@main1
     name: Governance Validation
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -80,3 +82,4 @@ jobs:
             fi
           done
           exit $missing
+
