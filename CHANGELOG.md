@@ -24,5 +24,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the single authoritative source (audit finding L37).
 - `ADR.md`: add canonical-source header noting `docs/adr/` wins on conflict
   (audit finding L37).
+- `src/endpoints.rs`: add `HealthzEndpoint` and `ReadyzEndpoint` so any
+  service built on `apisync` can mount liveness/readiness probes via the
+  standard router without pulling in extra dependencies (audit finding L5/L27).
+- `src/domain/middleware/request_id.rs`: add `RequestIdMiddleware` that echoes
+  the inbound `X-Request-Id` header or generates a fresh id and stamps it on
+  the response, closing the request-id propagation gap noted in the audit
+  (audit finding L5/L27).
+- `README.md`: document the expected `tokio::time::timeout` wrapper around
+  adapter boundaries so downstream callers fail closed instead of waiting
+  forever on transport work (audit finding L26).
+- `LICENSE`: include both MIT and Apache-2.0 license texts to match the
+  crate's `MIT OR Apache-2.0` declaration (audit finding L17).
+- `fuzz/fuzz_targets/router_dispatch.rs`: populate the previously empty fuzz
+  harness with a smoke-test that drives `ItemCrudEndpoint::handle` with random
+  bytes so future regressions in the dispatch path surface during fuzzing
+  (audit finding L11/L25).
+- `fuzz/Cargo.toml`: declare the local `apisync` + `serde_json` + `futures`
+  dependencies required by the new fuzz target.
+- `AGENTS.md`: add a one-line backlog pointer so autonomous agents know where
+  to look for the next round of audit findings (audit finding L30/L38).
 
 [Unreleased]: https://github.com/KooshaPari/Apisync/compare/main...HEAD

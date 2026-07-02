@@ -1,4 +1,8 @@
-//! CRUD endpoints for domain models
+//! Endpoint implementations shipped with `apisync`.
+//!
+//! Each endpoint implements the [`crate::domain::Endpoint`] trait so callers
+//! can mount them on any router (the in-tree [`crate::application::Router`] or
+//! a downstream consumer's own routing layer).
 
 use std::sync::Arc;
 
@@ -11,7 +15,7 @@ use crate::domain::{CreateItem, Endpoint, ItemStore, Request, Response, UpdateIt
 ///
 /// Falls back to a `500 Internal Server Error` response if serialization fails,
 /// rather than panicking on the hot path (which would tear down the connection
-/// task and propagate poison to every subsequent request — see L4/L25 in the
+/// task and propagate poison to every subsequent request; see L4/L25 in the
 /// audit). This mirrors the safe-fallback pattern used by `convert_response`
 /// in the hyper adapter.
 fn json_response<T: Serialize + ?Sized>(value: &T, status: u16) -> Response {
@@ -90,6 +94,41 @@ impl Endpoint for ItemCrudEndpoint {
     }
 }
 
+/// `Endpoint` that answers `GET /healthz` with `200 OK`.
+///
+/// Suitable for liveness probes; it succeeds as long as the runtime is
+/// reachable, regardless of downstream dependency state.
+pub struct HealthzEndpoint;
+
+#[async_trait]
+impl Endpoint for HealthzEndpoint {
+    async fn handle(&self, req: Request) -> Response {
+        if req.method == "GET" && req.path == "/healthz" {
+            Response::ok()
+        } else {
+            Response::not_found()
+        }
+    }
+}
+
+/// `Endpoint` that answers `GET /readyz` with `200 OK`.
+///
+/// A readiness probe should be cheap and side-effect-free, so this returns
+/// `ok` by default. Downstream services can wrap this with dependency-aware
+/// checks when they need stricter gating.
+pub struct ReadyzEndpoint;
+
+#[async_trait]
+impl Endpoint for ReadyzEndpoint {
+    async fn handle(&self, req: Request) -> Response {
+        if req.method == "GET" && req.path == "/readyz" {
+            Response::ok()
+        } else {
+            Response::not_found()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,8 +159,6 @@ mod tests {
 
     #[test]
     fn json_response_falls_back_to_500_on_serialization_error() {
-        // Regression test for L4/L25: previously `serde_json::to_vec(...).unwrap()`
-        // panicked the connection task. Now we must surface 500 instead.
         let resp = json_response(&Unserializable, 201);
         assert_eq!(resp.status, 500);
         assert!(resp.body.is_none(), "500 fallback must not include a partial body");
@@ -129,10 +166,33 @@ mod tests {
 
     #[test]
     fn json_response_preserves_status_on_success() {
-        // 200 for GET, 201 for POST are both passed through unchanged.
         let ok = json_response(&vec![1u32, 2, 3], 200);
         assert_eq!(ok.status, 200);
         let created = json_response(&vec![1u32, 2, 3], 201);
         assert_eq!(created.status, 201);
+    }
+
+    #[tokio::test]
+    async fn healthz_returns_ok() {
+        let resp = HealthzEndpoint.handle(Request::new("/healthz", "GET")).await;
+        assert_eq!(resp.status, 200);
+    }
+
+    #[tokio::test]
+    async fn healthz_rejects_other_methods() {
+        let resp = HealthzEndpoint.handle(Request::new("/healthz", "POST")).await;
+        assert_eq!(resp.status, 404);
+    }
+
+    #[tokio::test]
+    async fn readyz_returns_ok() {
+        let resp = ReadyzEndpoint.handle(Request::new("/readyz", "GET")).await;
+        assert_eq!(resp.status, 200);
+    }
+
+    #[tokio::test]
+    async fn readyz_rejects_other_paths() {
+        let resp = ReadyzEndpoint.handle(Request::new("/nope", "GET")).await;
+        assert_eq!(resp.status, 404);
     }
 }
