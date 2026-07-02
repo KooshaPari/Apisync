@@ -20,12 +20,10 @@ pub use adapters::websocket::{BroadcastHub, WebSocketEndpoint, WebSocketServer, 
 pub use application::handler::Handler;
 pub use application::router::Router;
 // Domain types
-pub use domain::{
-    CreateItem, Endpoint, Item, ItemStore, Request, Response, UpdateItem,
-};
-pub use domain::middleware::{Middleware, Next};
+pub use domain::middleware::{Middleware, Next, RequestIdMiddleware};
+pub use domain::{CreateItem, Endpoint, Item, ItemStore, Request, Response, UpdateItem};
 // CRUD endpoint
-pub use endpoints::ItemCrudEndpoint;
+pub use endpoints::{HealthzEndpoint, ItemCrudEndpoint, ReadyzEndpoint};
 // Logging initializer (re-export the module so callers can call `apisync::logging::init()`)
 pub use infrastructure::logging;
 

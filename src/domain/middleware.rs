@@ -1,16 +1,26 @@
-//! Middleware traits and implementations
+//! Middleware traits and implementations.
+
+pub mod request_id;
+
+pub use request_id::RequestIdMiddleware;
 
 use async_trait::async_trait;
 
 use crate::domain::{Request, Response};
 
-/// Middleware trait
+/// Middleware trait.
+///
+/// The `F: 'static` bound keeps the trait object simple — most middleware
+/// closures are `'static` (e.g. capturing `Arc<SomeService>`) and this lets
+/// us sidestep the trickier lifetime plumbing that `async_trait` introduces
+/// for borrowed closure types.
 #[async_trait]
 pub trait Middleware<F>: Send + Sync
 where
     F: Fn(Request) -> std::pin::Pin<Box<dyn std::future::Future<Output = Response> + Send>>
         + Send
-        + Sync,
+        + Sync
+        + 'static,
 {
     async fn handle(&self, request: Request, next: Next<F>) -> Response;
 }

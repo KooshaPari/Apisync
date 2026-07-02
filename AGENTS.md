@@ -38,3 +38,9 @@ Follow tower-based middleware pattern:
 
 - **CLAUDE.md**: `./CLAUDE.md`
 - **PRD.md**: `./PRD.md`
+
+## Backlog pointer
+
+The next round of v37 audit findings to tackle lives in
+`docs/audit/v37-findings.md` (if present) or in the `## [Unreleased]` section
+of `CHANGELOG.md`. Start there before opening new work.
