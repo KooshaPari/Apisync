@@ -151,7 +151,7 @@ async fn handle_connection(
     // Send connected message.
     let connected_msg = WsMessage::Connected { client_id };
     let json = serde_json::to_string(&connected_msg)?;
-    write.send(Message::Text(json)).await?;
+    write.send(Message::Text(json.into())).await?;
 
     let hub_for_read = Arc::clone(&hub);
 
@@ -167,7 +167,7 @@ async fn handle_connection(
                             continue;
                         }
                     };
-                    if let Err(e) = write.send(Message::Text(json)).await {
+                    if let Err(e) = write.send(Message::Text(json.into())).await {
                         error!("Failed to send message to client {}: {}", client_id, e);
                         break;
                     }
@@ -394,7 +394,7 @@ mod tests {
             description: "A useful widget".to_string(),
         };
         let json = serde_json::to_string(&create).unwrap();
-        ws.send(Message::Text(json)).await.unwrap();
+        ws.send(Message::Text(json.into())).await.unwrap();
 
         // Receive the broadcasted ItemCreated.
         let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
@@ -621,7 +621,7 @@ mod tests {
         // Send GetItems.
         let get = WsMessage::GetItems;
         let json = serde_json::to_string(&get).unwrap();
-        ws.send(Message::Text(json)).await.unwrap();
+        ws.send(Message::Text(json.into())).await.unwrap();
 
         // Receive the ItemCreated broadcast for the pre-loaded item.
         let msg = timeout(Duration::from_secs(1), ws.next()).await.unwrap().unwrap().unwrap();
