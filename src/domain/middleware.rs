@@ -2,9 +2,8 @@
 
 pub mod request_id;
 
-pub use request_id::RequestIdMiddleware;
-
 use async_trait::async_trait;
+pub use request_id::RequestIdMiddleware;
 
 use crate::domain::{Request, Response};
 

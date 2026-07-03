@@ -487,6 +487,15 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_broadcast_hub_receiver_count() {
+        let hub = BroadcastHub::new(16);
+        assert_eq!(hub.receiver_count(), 0);
+        let _rx1 = hub.subscribe();
+        let _rx2 = hub.subscribe();
+        assert_eq!(hub.receiver_count(), 2);
+    }
+
+    #[tokio::test]
     async fn test_websocket_get_items() {
         let (addr, _hub, store) = setup_ws_server().await;
         let url = format!("ws://{addr}/ws/items");

@@ -76,6 +76,31 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn extract_returns_none_when_header_absent() {
+        let req = Request::new("/items", "GET");
+        assert!(extract(&req).is_none());
+    }
+
+    #[tokio::test]
+    async fn extract_is_case_insensitive() {
+        let req = Request::new("/items", "GET").with_header("x-request-id", "abc-123");
+        assert_eq!(extract(&req), Some("abc-123".to_string()));
+    }
+
+    #[tokio::test]
+    async fn stamps_response_with_generated_id_when_absent() {
+        let middleware = RequestIdMiddleware;
+        let req = Request::new("/items", "GET");
+        let next = Next::new(|_req| Box::pin(async { Response::ok() }));
+
+        let resp = middleware.handle(req, next).await;
+
+        let id = resp.headers.iter().find(|(k, _)| k == HEADER_NAME).map(|(_, v)| v.as_str());
+        assert!(id.is_some());
+        assert!(id.unwrap().starts_with("req-"));
+    }
+
+    #[tokio::test]
     async fn fresh_id_is_unique() {
         let a = fresh_id();
         let b = fresh_id();
