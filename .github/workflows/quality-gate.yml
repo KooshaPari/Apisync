@@ -66,12 +66,15 @@ jobs:
       - name: Check coverage threshold
         run: |
           COVERAGE=$(grep -o 'coverage="[0-9.]*"' cobertura.xml | head -1 | grep -o '[0-9.]*')
-          COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l)
-          if (( $(echo "$COVERAGE_PCT < $COVERAGE_THRESHOLD" | bc -l) )); then
-            printf "Coverage %.2f%% is below threshold %s%%\n" "$COVERAGE_PCT" "$COVERAGE_THRESHOLD"
-            exit 1
-          fi
-          printf "Coverage %.2f%% meets threshold %s%%\n" "$COVERAGE_PCT" "$COVERAGE_THRESHOLD"
+          awk -v cov="$COVERAGE" -v threshold="$COVERAGE_THRESHOLD" 'BEGIN {
+            pct = cov * 100
+            printf "Coverage %.2f%% ", pct
+            if (pct < threshold) {
+              printf "is below threshold %s%%\n", threshold
+              exit 1
+            }
+            printf "meets threshold %s%%\n", threshold
+          }'
 
   e2e-tests:
     name: E2E Tests
