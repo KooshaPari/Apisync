@@ -66,10 +66,12 @@ jobs:
       - name: Check coverage threshold
         run: |
           COVERAGE=$(grep -o 'coverage="[0-9.]*"' cobertura.xml | head -1 | grep -o '[0-9.]*')
-          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
-            echo "Coverage $COVERAGE% is below threshold $COVERAGE_THRESHOLD%"
+          COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l)
+          if (( $(echo "$COVERAGE_PCT < $COVERAGE_THRESHOLD" | bc -l) )); then
+            printf "Coverage %.2f%% is below threshold %s%%\n" "$COVERAGE_PCT" "$COVERAGE_THRESHOLD"
             exit 1
           fi
+          printf "Coverage %.2f%% meets threshold %s%%\n" "$COVERAGE_PCT" "$COVERAGE_THRESHOLD"
 
   e2e-tests:
     name: E2E Tests
@@ -150,6 +152,10 @@ jobs:
     needs: [unit-tests, e2e-tests, integration-tests, fr-annotation-check]
     if: always()
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
