@@ -65,7 +65,11 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          COVERAGE=$(grep -m1 -o 'coverage="[0-9.]*"' cobertura.xml | grep -o '[0-9.]*')
+          COVERAGE=$(grep -m1 -o 'line-rate="[0-9.]*"' cobertura.xml | grep -o '[0-9.]*')
+          if [ -z "$COVERAGE" ]; then
+            echo "Could not find line-rate attribute in cobertura.xml"
+            exit 1
+          fi
           awk -v cov="$COVERAGE" -v threshold="$COVERAGE_THRESHOLD" 'BEGIN {
             pct = cov * 100
             printf "Coverage %.2f%% ", pct
