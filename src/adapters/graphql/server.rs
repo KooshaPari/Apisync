@@ -145,4 +145,30 @@ mod tests {
         let res = endpoint.handle(req).await;
         assert_eq!(res.status, 400);
     }
+
+    #[tokio::test]
+    async fn test_post_without_body_returns_400() {
+        let endpoint = setup_endpoint();
+        let req = Request::new("/graphql", "POST");
+        let res = endpoint.handle(req).await;
+        assert_eq!(res.status, 400);
+    }
+
+    #[tokio::test]
+    async fn test_post_query_with_variables_and_operation_name() {
+        let endpoint = setup_endpoint();
+        let body = serde_json::json!({
+            "query": "query GetItems { items { id name description } }",
+            "variables": {},
+            "operationName": "GetItems"
+        })
+        .to_string()
+        .into_bytes();
+        let req = Request::new("/graphql", "POST").with_body(body);
+        let res = endpoint.handle(req).await;
+        assert_eq!(res.status, 200);
+        let body = res.body.unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert!(json["data"]["items"].as_array().unwrap().is_empty());
+    }
 }
