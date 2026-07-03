@@ -1,8 +1,9 @@
+use std::hint::black_box;
 use std::sync::Arc;
 
 use apisync::adapters::graphql::{build_schema, execute_mutation, execute_query};
 use apisync::domain::ItemStore;
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use tokio::runtime::Runtime;
 
 fn bench_schema_parsing(c: &mut Criterion) {
