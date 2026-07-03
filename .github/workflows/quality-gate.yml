@@ -55,7 +55,7 @@ jobs:
       - name: Generate coverage
         run: |
           cargo install cargo-tarpaulin
-          cargo tarpaulin --lib --out Xml --all-features
+          cargo tarpaulin --out Xml --all-features --timeout 300
 
       - name: Upload coverage
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
@@ -65,11 +65,20 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          COVERAGE=$(grep -o 'coverage="[0-9.]*"' cobertura.xml | head -1 | grep -o '[0-9.]*')
-          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
-            echo "Coverage $COVERAGE% is below threshold $COVERAGE_THRESHOLD%"
+          COVERAGE=$(grep -m1 -o 'line-rate="[0-9.]*"' cobertura.xml | grep -o '[0-9.]*')
+          if [ -z "$COVERAGE" ]; then
+            echo "Could not find line-rate attribute in cobertura.xml"
             exit 1
           fi
+          awk -v cov="$COVERAGE" -v threshold="$COVERAGE_THRESHOLD" 'BEGIN {
+            pct = cov * 100
+            printf "Coverage %.2f%% ", pct
+            if (pct < threshold) {
+              printf "is below threshold %s%%\n", threshold
+              exit 1
+            }
+            printf "meets threshold %s%%\n", threshold
+          }'
 
   e2e-tests:
     name: E2E Tests
@@ -150,6 +159,10 @@ jobs:
     needs: [unit-tests, e2e-tests, integration-tests, fr-annotation-check]
     if: always()
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 

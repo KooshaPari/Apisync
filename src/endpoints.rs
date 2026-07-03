@@ -131,9 +131,10 @@ impl Endpoint for ReadyzEndpoint {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde::ser::Error as _;
     use serde::{Serialize, Serializer};
+
+    use super::*;
 
     /// A `Serialize` impl that always returns a custom error, used to prove
     /// `json_response` falls back to 500 instead of panicking.

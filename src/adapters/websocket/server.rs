@@ -461,6 +461,116 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_websocket_endpoint_broadcast_missing_body_returns_400() {
+        let hub = Arc::new(BroadcastHub::new(16));
+        let store = Arc::new(ItemStore::new());
+        let endpoint = WebSocketEndpoint::new(Arc::clone(&hub), Arc::clone(&store));
+
+        let req = Request::new("/ws/broadcast", "POST");
+        let res = endpoint.handle(req).await;
+        assert_eq!(res.status, 400);
+    }
+
+    #[tokio::test]
+    async fn test_websocket_endpoint_broadcast_invalid_body_returns_400() {
+        let hub = Arc::new(BroadcastHub::new(16));
+        let store = Arc::new(ItemStore::new());
+        let endpoint = WebSocketEndpoint::new(Arc::clone(&hub), Arc::clone(&store));
+
+        let req = Request::new("/ws/broadcast", "POST").with_body(b"not-json".to_vec());
+        let res = endpoint.handle(req).await;
+        assert_eq!(res.status, 400);
+    }
+
+    #[tokio::test]
+    async fn process_message_get_items_broadcasts_each_item() {
+        let store = ItemStore::new();
+        store.create(CreateItem { name: "A".to_string(), description: "".to_string() });
+        let hub = BroadcastHub::new(16);
+        let mut rx = hub.subscribe();
+
+        process_message(WsMessage::GetItems, &store, &hub).await.unwrap();
+
+        let msg = rx.recv().await.unwrap();
+        assert!(matches!(msg, WsMessage::ItemCreated { .. }));
+    }
+
+    #[tokio::test]
+    async fn process_message_update_item_not_found_broadcasts_error() {
+        let store = ItemStore::new();
+        let hub = BroadcastHub::new(16);
+        let mut rx = hub.subscribe();
+
+        process_message(
+            WsMessage::UpdateItem { id: 999, name: Some("X".to_string()), description: None },
+            &store,
+            &hub,
+        )
+        .await
+        .unwrap();
+
+        let msg = rx.recv().await.unwrap();
+        assert!(matches!(msg, WsMessage::Error { .. }));
+    }
+
+    #[tokio::test]
+    async fn process_message_update_item_found_broadcasts_updated() {
+        let store = ItemStore::new();
+        let item = store.create(CreateItem { name: "A".to_string(), description: "".to_string() });
+        let hub = BroadcastHub::new(16);
+        let mut rx = hub.subscribe();
+
+        process_message(
+            WsMessage::UpdateItem { id: item.id, name: Some("B".to_string()), description: None },
+            &store,
+            &hub,
+        )
+        .await
+        .unwrap();
+
+        let msg = rx.recv().await.unwrap();
+        assert!(matches!(msg, WsMessage::ItemUpdated { .. }));
+    }
+
+    #[tokio::test]
+    async fn process_message_delete_item_not_found_broadcasts_error() {
+        let store = ItemStore::new();
+        let hub = BroadcastHub::new(16);
+        let mut rx = hub.subscribe();
+
+        process_message(WsMessage::DeleteItem { id: 999 }, &store, &hub).await.unwrap();
+
+        let msg = rx.recv().await.unwrap();
+        assert!(matches!(msg, WsMessage::Error { .. }));
+    }
+
+    #[tokio::test]
+    async fn process_message_delete_item_found_broadcasts_deleted() {
+        let store = ItemStore::new();
+        let item = store.create(CreateItem { name: "A".to_string(), description: "".to_string() });
+        let hub = BroadcastHub::new(16);
+        let mut rx = hub.subscribe();
+
+        process_message(WsMessage::DeleteItem { id: item.id }, &store, &hub).await.unwrap();
+
+        let msg = rx.recv().await.unwrap();
+        assert!(matches!(msg, WsMessage::ItemDeleted { .. }));
+    }
+
+    #[tokio::test]
+    async fn process_message_subscribe_and_unsubscribe_are_noops() {
+        let store = ItemStore::new();
+        let hub = BroadcastHub::new(16);
+
+        process_message(WsMessage::Subscribe { topic: "items".to_string() }, &store, &hub)
+            .await
+            .unwrap();
+        process_message(WsMessage::Unsubscribe { topic: "items".to_string() }, &store, &hub)
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
     async fn test_websocket_endpoint_not_found() {
         let hub = Arc::new(BroadcastHub::new(16));
         let store = Arc::new(ItemStore::new());
@@ -484,6 +594,15 @@ mod tests {
         let msg2 = rx2.recv().await.unwrap();
         assert_eq!(msg1, WsMessage::ItemCreated { item: item.clone() });
         assert_eq!(msg2, WsMessage::ItemCreated { item });
+    }
+
+    #[tokio::test]
+    async fn test_broadcast_hub_receiver_count() {
+        let hub = BroadcastHub::new(16);
+        assert_eq!(hub.receiver_count(), 0);
+        let _rx1 = hub.subscribe();
+        let _rx2 = hub.subscribe();
+        assert_eq!(hub.receiver_count(), 2);
     }
 
     #[tokio::test]
