@@ -9,6 +9,7 @@ pub mod endpoints;
 pub mod infrastructure;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Stable public prelude — explicit re-exports rather than glob wildcards so
 // downstream crates get a predictable API surface and rustdoc renders clearly.
 // GraphQL adapter — schema types are re-exported through adapters::graphql
@@ -34,6 +35,21 @@ pub use infrastructure::logging;
 ///
 /// Construct with [`ApiKit::new`] to obtain a configured instance that can
 /// spawn [`HyperServer`]s and attach [`Endpoint`] implementations.
+=======
+// Selective re-exports — NOT `pub use *` — so consumers depend on a stable
+// public API surface rather than every internal module detail. This is the
+// audit's L0/L14 finding: flat `pub use *` at crate root couples consumers
+// to internal layering and makes every module change a potential breaking
+// change.
+pub use domain::{Endpoint, Request, Response};
+pub use domain::{CreateItem, Item, ItemStore, UpdateItem};
+pub use domain::{ApiError, HealthStatus};
+pub use endpoints::ItemCrudEndpoint;
+pub use application::Router;
+pub use infrastructure::logging;
+
+/// Main library entry point that initializes shared infrastructure.
+>>>>>>> Stashed changes
 =======
 // Selective re-exports — NOT `pub use *` — so consumers depend on a stable
 // public API surface rather than every internal module detail. This is the
