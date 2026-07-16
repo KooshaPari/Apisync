@@ -6,6 +6,90 @@ use async_trait::async_trait;
 pub use middleware::{Middleware, Next};
 use serde::{Deserialize, Serialize};
 
+// ---------------------------------------------------------------------------
+// ApiError — unified error envelope (audit L14 fix)
+// ---------------------------------------------------------------------------
+
+/// Typed application error with a stable JSON representation.
+///
+/// Every adapter (REST, GraphQL, WebSocket) SHOULD convert its internal errors
+/// into this type before returning to the client, so consumers always receive
+/// a uniform `{"error":{"code":"...","message":"...","status":...}}` body
+/// regardless of transport.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiError {
+    /// Machine-readable error code (e.g. `"not_found"`, `"validation_error"`).
+    pub code: String,
+    /// Human-readable explanation suitable for an end-user.
+    pub message: String,
+    /// HTTP status code that best represents this error.
+    pub status: u16,
+}
+
+impl ApiError {
+    pub fn not_found(msg: impl Into<String>) -> Self {
+        Self { code: "not_found".into(), message: msg.into(), status: 404 }
+    }
+
+    pub fn bad_request(msg: impl Into<String>) -> Self {
+        Self { code: "bad_request".into(), message: msg.into(), status: 400 }
+    }
+
+    pub fn internal(msg: impl Into<String>) -> Self {
+        Self { code: "internal_error".into(), message: msg.into(), status: 500 }
+    }
+
+    pub fn method_not_allowed(msg: impl Into<String>) -> Self {
+        Self { code: "method_not_allowed".into(), message: msg.into(), status: 405 }
+    }
+
+    pub fn payload_too_large(msg: impl Into<String>) -> Self {
+        Self { code: "payload_too_large".into(), message: msg.into(), status: 413 }
+    }
+
+    /// Serialize as a JSON `{"error":{...}}` envelope.
+    pub fn to_json_bytes(&self) -> Vec<u8> {
+        serde_json::to_vec(&serde_json::json!({"error": self})).unwrap_or_default()
+    }
+}
+
+impl std::fmt::Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}] {}: {}", self.status, self.code, self.message)
+    }
+}
+
+impl std::error::Error for ApiError {}
+
+// ---------------------------------------------------------------------------
+// HealthStatus — health-check probe (audit L5 + L26 fix)
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HealthStatus {
+    pub status: String,
+    pub service: String,
+    pub version: String,
+}
+
+impl HealthStatus {
+    pub fn ok() -> Self {
+        Self {
+            status: "ok".into(),
+            service: env!("CARGO_PKG_NAME").to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+        }
+    }
+
+    pub fn to_json_bytes(&self) -> Vec<u8> {
+        serde_json::to_vec(self).unwrap_or_default()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Core domain types
+// ---------------------------------------------------------------------------
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Request {
     pub path: String,
