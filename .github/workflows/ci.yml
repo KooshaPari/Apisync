@@ -30,16 +30,32 @@ jobs:
         uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941 # v2
 
       - name: Cargo check
-        run: cargo check --all-targets --verbose
+        run: cargo check --all-targets --locked --verbose
 
-      - name: Cargo test
-        run: cargo test --all-targets --verbose
+      - name: Cargo test (correctness targets)
+        run: cargo test --lib --tests --locked --verbose
 
       - name: Cargo clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
 
       - name: Cargo fmt check
         run: cargo fmt -- --check
+
+      - name: Rustdoc warnings
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --locked
+
+      # Criterion benches use harness=false, so cargo test --all-targets runs
+      # performance workloads. Compile them here without executing them.
+      - name: Compile benchmarks
+        run: cargo bench --no-run --locked
+
+      - name: Release build
+        run: cargo build --release --locked
+
+      - name: Package verification
+        run: cargo package --locked
 
   security:
     name: Security Audit
@@ -49,14 +65,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@9b8cccef289f0b43e9bafd4af825251398900941 # v2
-
       - name: Cargo audit (RustSec)
-        run: cargo audit --deny warnings
+        uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   phenotype-validate:
     name: Governance Validation

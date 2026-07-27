@@ -252,9 +252,10 @@ mod tests {
     /// `lock()` returns a guard directly and never fails. These tests pin the
     /// new behavior so the audit's L25 finding does not regress.
     mod store {
-        use super::*;
         use std::sync::Arc;
         use std::thread;
+
+        use super::*;
 
         #[test]
         fn create_assigns_monotonic_ids() {
