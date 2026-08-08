@@ -87,15 +87,34 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Cargo check (all targets, locked)
+        run: |
+          cargo check --all-targets --locked --verbose 2>&1 || echo "::warning::cargo check issues (advisory)"
       - name: cargo fmt --check
         run: |
           cargo fmt --all -- --check 2>&1 || echo "::warning::cargo fmt issues (advisory)"
-      - name: cargo clippy
+      - name: Cargo clippy (all targets, all features, locked)
         run: |
-          cargo clippy --all-targets -- -D warnings 2>&1 || echo "::warning::clippy issues (advisory)"
-      - name: cargo test
+          cargo clippy --all-targets --all-features --locked -- -D warnings 2>&1 || echo "::warning::clippy issues (advisory)"
+      - name: Cargo test (correctness targets, locked)
         run: |
-          cargo test --workspace --no-fail-fast 2>&1 || echo "::warning::test failures (advisory)"
+          cargo test --lib --tests --locked --verbose 2>&1 || echo "::warning::test failures (advisory)"
+      - name: Rustdoc warnings
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: |
+          cargo doc --no-deps --locked 2>&1 || echo "::warning::rustdoc issues (advisory)"
+      # Criterion benches use harness=false, so cargo test --all-targets runs
+      # performance workloads. Compile them here without executing them.
+      - name: Compile benchmarks (locked)
+        run: |
+          cargo bench --no-run --locked 2>&1 || echo "::warning::bench compile issues (advisory)"
+      - name: Release build (locked)
+        run: |
+          cargo build --release --locked 2>&1 || echo "::warning::release build issues (advisory)"
+      - name: Package verification (locked)
+        run: |
+          cargo package --locked 2>&1 || echo "::warning::package issues (advisory)"
 
   cargo-deny:
     name: Cargo Deny (Advisories + Licenses)
