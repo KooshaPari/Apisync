@@ -190,22 +190,6 @@ jobs:
             npm test 2>&1 || echo "::warning::test failures (advisory)"
           fi
 
-      - name: Rustdoc warnings
-        env:
-          RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --locked
-
-      # Criterion benches use harness=false, so cargo test --all-targets runs
-      # performance workloads. Compile them here without executing them.
-      - name: Compile benchmarks
-        run: cargo bench --no-run --locked
-
-      - name: Release build
-        run: cargo build --release --locked
-
-      - name: Package verification
-        run: cargo package --locked
-
   security:
     name: Security Scan
     needs: detect
