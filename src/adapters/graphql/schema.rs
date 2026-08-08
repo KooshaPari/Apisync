@@ -243,6 +243,36 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_mutation_update_item_invalid_id() {
+        let schema = setup_schema();
+        let update = r#"mutation { updateItem(id: "not-a-number", input: { name: "New" }) { id name description } }"#;
+        let res = execute_mutation(&schema, update).await;
+        assert!(res.is_ok());
+        let json = serde_json::to_value(&res).unwrap();
+        assert!(json["data"]["updateItem"].is_null());
+    }
+
+    #[tokio::test]
+    async fn test_mutation_delete_item_invalid_id() {
+        let schema = setup_schema();
+        let delete = r#"mutation { deleteItem(id: "not-a-number") { id name description } }"#;
+        let res = execute_mutation(&schema, delete).await;
+        assert!(res.is_ok());
+        let json = serde_json::to_value(&res).unwrap();
+        assert!(json["data"]["deleteItem"].is_null());
+    }
+
+    #[tokio::test]
+    async fn test_query_item_invalid_id() {
+        let schema = setup_schema();
+        let res =
+            execute_query(&schema, r#"{ item(id: "not-a-number") { id name description } }"#).await;
+        assert!(res.is_ok());
+        let json = serde_json::to_value(&res).unwrap();
+        assert!(json["data"]["item"].is_null());
+    }
+
+    #[tokio::test]
     async fn test_subscription_items_stream() {
         let schema = setup_schema();
         let request =

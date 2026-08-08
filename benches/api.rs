@@ -1,5 +1,7 @@
+use std::hint::black_box;
+
 use apisync::{Request, Response};
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 fn bench_request_new(c: &mut Criterion) {
     c.bench_function("request_new", |b| {

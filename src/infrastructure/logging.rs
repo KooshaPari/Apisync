@@ -9,3 +9,16 @@ pub fn init() {
         .with(tracing_subscriber::fmt::layer())
         .try_init();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn init_does_not_panic() {
+        // A second call after the subscriber is already set just returns an
+        // error from `try_init()`, which `init()` discards; it must never panic.
+        init();
+        init();
+    }
+}

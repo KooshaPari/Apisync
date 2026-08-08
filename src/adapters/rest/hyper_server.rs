@@ -672,6 +672,28 @@ mod tests {
     }
 
     #[test]
+    fn convert_response_falls_back_to_500_for_invalid_status() {
+        let res = Response { status: 0, headers: Vec::new(), body: None };
+        let hyper_res = convert_response(res);
+        assert_eq!(hyper_res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn convert_response_preserves_headers_and_body() {
+        let res = Response::ok().with_header("x-custom", "value").with_body(b"hello".to_vec());
+        let hyper_res = convert_response(res);
+        assert_eq!(hyper_res.status(), StatusCode::OK);
+        assert_eq!(hyper_res.headers().get("x-custom").unwrap(), "value");
+    }
+
+    #[test]
+    fn error_response_sets_status_and_plain_text_body() {
+        let res = error_response(StatusCode::BAD_REQUEST, "Bad Request");
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(res.headers().get("Content-Type").unwrap(), "text/plain");
+    }
+
+    #[test]
     fn is_length_limit_error_returns_false_for_unrelated_errors() {
         #[derive(Debug)]
         struct OtherError;
