@@ -71,17 +71,20 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
 
-  # 4. Container Security (if Dockerfile exists)
+  # 4. Container Security (if Dockerfile exists). hashFiles() is not allowed
+  # in job-level `if`; each step below gates on the repository having a
+  # Dockerfile instead.
   container-scan:
     runs-on: ubuntu-latest
-    if: hashFiles('**/Dockerfile') != ''
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       
       - name: Build image
+        if: hashFiles('**/Dockerfile') != ''
         run: docker build -t app:${{ github.sha }} .
       
       - name: Scan image with Trivy
+        if: hashFiles('**/Dockerfile') != ''
         uses: aquasecurity/trivy-action@bfa4b33a029b9aa80ddb784b45574c30e072c59e # v-latest: @master
         with:
           image-ref: 'app:${{ github.sha }}'
@@ -89,6 +92,7 @@ jobs:
           output: 'trivy-image-results.sarif'
       
       - name: Upload image scan results
+        if: hashFiles('**/Dockerfile') != ''
         uses: github/codeql-action/upload-sarif@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
         with:
           sarif_file: 'trivy-image-results.sarif'

@@ -20,8 +20,11 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
-    security:
-      permissions: read-all
+    # OSSF scorecard-action publishes results via OIDC (id-token: write);
+    # everything else stays read-only (workflow-level `permissions: read-all`).
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout

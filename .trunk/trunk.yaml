@@ -84,6 +84,12 @@ lint:
   # prettier's YAML printer re-indents `on:`-keyed workflow files with a
   # wholesale diff and yamllint's 80-col default flags long action SHAs, so
   # both are ignored for workflow files only.
+  #
+  # The vitepress build config (docs/.vitepress/) is the repo's only JS file
+  # and the repo ships no eslint config; eslint stays enabled for any real JS
+  # but is ignored for the docs build tooling.
   ignore:
     - linters: [prettier, yamllint]
       paths: [.github/workflows/**]
+    - linters: [eslint]
+      paths: [docs/.vitepress/**]

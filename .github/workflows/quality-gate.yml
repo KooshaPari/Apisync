@@ -31,9 +31,9 @@ jobs:
         id: check
         run: |
           # Check for test directories
-          [ -d "tests" ] && echo "has_tests=true" >> $GITHUB_OUTPUT || echo "has_tests=false" >> $GITHUB_OUTPUT
-          [ -d "e2e" ] && echo "has_e2e=true" >> $GITHUB_OUTPUT || echo "has_e2e=false" >> $GITHUB_OUTPUT
-          [ -d "integration" ] && echo "has_integration=true" >> $GITHUB_OUTPUT || echo "has_integration=false" >> $GITHUB_OUTPUT
+          [ -d "tests" ] && echo "has_tests=true" >> "$GITHUB_OUTPUT" || echo "has_tests=false" >> "$GITHUB_OUTPUT"
+          [ -d "e2e" ] && echo "has_e2e=true" >> "$GITHUB_OUTPUT" || echo "has_e2e=false" >> "$GITHUB_OUTPUT"
+          [ -d "integration" ] && echo "has_integration=true" >> "$GITHUB_OUTPUT" || echo "has_integration=false" >> "$GITHUB_OUTPUT"
 
   unit-tests:
     name: Unit Tests

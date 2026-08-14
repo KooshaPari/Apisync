@@ -16,11 +16,13 @@ on:
 jobs:
   sync-secrets:
     name: Pull secrets from Infisical
-    runs-on: blacksmith-2vcpu-ubuntu-2204
+    # Previously `blacksmith-2vcpu-ubuntu-2204`, which no runner matched
+    # (jobs queued until the 24h timeout on every PR). Use a standard runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install Infisical CLI
         run: |
