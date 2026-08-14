@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-08-13
+
+First tagged release. Stabilizes the public API (explicit prelude re-exports),
+adds health probes and request-id middleware, hardens the hyper adapter against
+memory-exhaustion (1 MiB body cap), fixes CI/workflow defects, and ships a full
+docs site (quick start, API reference, architecture, traceability, journeys,
+stories, ADRs).
+
+### Added
+
+- `docs/`: quickstart, installation, api reference, architecture pages wired
+  into the vitepress site; traceability matrix expanded to 10 requirements.
+- `clippy.toml`: consolidated clippy configuration (moved from `.clippy.toml`)
+  so the health-dashboard required file is the single source of truth.
 
 ### Changed
 
@@ -20,6 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/workflows/quality-gate.yml`: remove `continue-on-error: true` from the
   coverage threshold check so a coverage regression actually fails the gate
   (audit finding L11).
+- `.github/workflows/scorecard.yml`: replace invalid job-level `security:` key
+  with the OSSF-standard `permissions: {contents: read, id-token: write}` so the
+  workflow file is valid again.
+- `.github/workflows/security-deep-scan.yml`: move `hashFiles()` gating from the
+  job-level `if` (invalid) to step-level `if`s on the container-scan job.
+- `.github/workflows/infisical.yml`: replace the `blacksmith-2vcpu-ubuntu-2204`
+  runner label (no runner matched; jobs timed out after 24h on every PR) with
+  `ubuntu-24.04`; pin `actions/checkout` to a SHA.
+- `.github/workflows/ci.yml`: fix detect-step shellcheck findings (quote
+  `$GITHUB_OUTPUT`, group redirects), fix the broken `[ -f "**/Cargo.toml" ]`
+  glob test, drop the self-referencing debug echo, and pin checkout.
 - `CODEOWNERS`: tombstone root file with a redirect comment; `.github/CODEOWNERS` is
   the single authoritative source (audit finding L37).
 - `ADR.md`: add canonical-source header noting `docs/adr/` wins on conflict
@@ -45,4 +69,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AGENTS.md`: add a one-line backlog pointer so autonomous agents know where
   to look for the next round of audit findings (audit finding L30/L38).
 
-[Unreleased]: https://github.com/KooshaPari/Apisync/compare/main...HEAD
+[0.2.0]: https://github.com/KooshaPari/Apisync/compare/v0.1.0...v0.2.0

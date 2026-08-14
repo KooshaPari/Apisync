@@ -36,7 +36,7 @@ jobs:
             echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=README.md"></head></html>' > _site/index.html
           elif [ ! -f "_site/index.html" ]; then
             echo "<html><body><h1>Apisync Documentation</h1><ul>" > _site/index.html
-            find _site -name "*.md" -type f | sed 's|^_site/||' | while read f; do
+            find _site -name "*.md" -type f | sed 's|^_site/||' | while read -r f; do
               echo "<li><a href='$f'>$f</a></li>" >> _site/index.html
             done
             echo "</ul></body></html>" >> _site/index.html
