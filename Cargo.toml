@@ -53,3 +53,8 @@ harness = false
 
 [workspace]
 members = ["."]
+# fuzz/ is a standalone cargo-fuzz crate (publish = false). Exclude it so
+# it doesn't inherit the root workspace: cargo then treats it as an
+# independent project, which also lets CodeQL's rust extractor load its
+# manifest instead of failing on a non-member package inside the workspace.
+exclude = ["fuzz"]

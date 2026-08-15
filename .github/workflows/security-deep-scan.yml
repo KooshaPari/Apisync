@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  security-events: write  # SARIF uploads (trivy, codeql) file to the Security tab
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

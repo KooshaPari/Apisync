@@ -21,10 +21,13 @@ jobs:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     # OSSF scorecard-action publishes results via OIDC (id-token: write);
-    # everything else stays read-only (workflow-level `permissions: read-all`).
+    # security-events: write lets the SARIF upload file findings to the
+    # Security tab. Everything else stays read-only (workflow-level
+    # `permissions: read-all`).
     permissions:
       contents: read
       id-token: write
+      security-events: write
 
     steps:
       - name: Checkout
