@@ -1,8 +1,9 @@
 name: Deep Security Scan
 
 on:
+  # Unfiltered: security scanning runs on every branch/tag push so the
+  # OpenSSF SAST check sees analysis on all commits, not just main.
   push:
-    branches: [main]
   pull_request:
     branches: [main]
   schedule:
@@ -48,7 +49,7 @@ jobs:
           fetch-depth: 0
 
       - name: Secrets scan (trufflehog)
-        uses: trufflesecurity/trufflehog@f446421baf832d6356c42c1743d99abff52ff334 # v3.95.7
+        uses: trufflesecurity/trufflehog@bcfcf73aaf4759d4dadc2783177c245a02792318 # v3.97.0
         with:
           path: ./
           extra_args: --only-verified
