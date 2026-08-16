@@ -57,11 +57,9 @@ if [ -f "Cargo.toml" ]; then
 elif [ -f "package.json" ]; then
     echo "  Running Node.js tests..."
     if command -v npm >/dev/null 2>&1; then
-        if [ -f "package-lock.json" ]; then
-            npm ci 2>/dev/null || npm install
-        else
-            npm install 2>/dev/null
-        fi
+        # npm ci installs exactly from the lockfile (dependencies pinned by
+        # hash). No lockfile-less `npm install` fallback.
+        npm ci 2>/dev/null || echo "  ⚠️ npm ci failed (lockfile missing?)"
 
         if npm run test --if-present 2>&1; then
             echo -e "${GREEN}✅ Node.js tests passed${NC}"
