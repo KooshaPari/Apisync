@@ -54,7 +54,7 @@ jobs:
 
       - name: Generate coverage
         run: |
-          cargo install cargo-tarpaulin
+          cargo install cargo-tarpaulin --version 0.37.2
           cargo tarpaulin --out Xml --all-features --timeout 300
 
       - name: Upload coverage
