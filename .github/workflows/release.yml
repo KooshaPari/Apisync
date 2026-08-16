@@ -6,8 +6,7 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +15,8 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # softprops/action-gh-release creates the GitHub Release
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
@@ -53,7 +54,7 @@ jobs:
 
       - name: Generate SBOM
         run: |
-          cargo install cargo-cyclonedx --locked || true
+          cargo install cargo-cyclonedx --version 0.5.9 --locked || true
           cargo cyclonedx -f json --override-filename sbom || echo "sbom generation skipped"
 
       - name: Create GitHub Release
