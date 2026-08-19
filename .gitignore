@@ -24,3 +24,4 @@ target
 *.pdb
 **/mutants.out*/
 sbom.json
+sbom.intoto.jsonl

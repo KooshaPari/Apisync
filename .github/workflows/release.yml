@@ -89,4 +89,6 @@ jobs:
             echo "::error::CARGO_REGISTRY_TOKEN secret not configured in repo settings"
             exit 1
           fi
-          cargo publish --locked --token "$CARGO_REGISTRY_TOKEN"
+          # sbom.* are generated at release time and are .gitignore'd; allow dirty to avoid
+          # "uncommitted changes" error if the file is not yet ignored in the tag's .gitignore
+          cargo publish --locked --allow-dirty --token "$CARGO_REGISTRY_TOKEN"
