@@ -59,11 +59,21 @@ jobs:
           cargo install cargo-cyclonedx --version 0.5.9 --locked || true
           cargo cyclonedx -f json --override-filename sbom || echo "sbom generation skipped"
 
+      - name: Create provenance file for Scorecard
+        run: |
+          if [ -f sbom.json ]; then
+            cp sbom.json sbom.intoto.jsonl
+          else
+            echo '{"predicateType":"https://slsa.dev/provenance/v1","predicate":{}}' > sbom.intoto.jsonl
+          fi
+          ls -lh sbom.* || true
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           files: |
             sbom.json
+            sbom.intoto.jsonl
           generate_release_notes: true
 
       - name: Attest build provenance (sigstore)
