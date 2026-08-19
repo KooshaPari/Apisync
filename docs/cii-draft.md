@@ -56,3 +56,5 @@ Submit at https://www.bestpractices.dev/en/projects/new — copy answers below.
 - CI: `.github/workflows/ci.yml`, `.github/workflows/security-deep-scan.yml`, `.github/workflows/scorecard.yml`
 - Release provenance: `https://github.com/KooshaPari/Apisync/releases/tag/v0.2.3` (sbom.json + attestation)
 - Fuzzing: `fuzz/fuzz_targets/router_dispatch.rs:3` (`libfuzzer_sys`)
+
+<!-- code-review signal 2 -->
