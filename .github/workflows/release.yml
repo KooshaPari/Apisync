@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: write  # softprops/action-gh-release creates the GitHub Release
       id-token: write  # attest-build-provenance (sigstore) needs OIDC
+      attestations: write  # attest-build-provenance needs to persist attestation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
