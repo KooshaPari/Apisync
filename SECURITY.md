@@ -14,7 +14,7 @@ land directly with the maintainers and are not visible publicly.
 ### Alternative: Email
 
 You can also email the maintainers directly at
-[TODO: maintainer security contact email].
+[security@apisync.dev](mailto:security@apisync.dev).
 
 ### What to include
 
