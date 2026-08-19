@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-08-19
+
+Patch release focused on supply-chain hardening and dependency freshness.
+
+### Changed
+
+- deps: bump `tokio-tungstenite` 0.29 → 0.30, `http-body-util` 0.1.4 → 0.1.5 and batch patch/minor updates.
+- ci: bump GitHub Actions to current majors (checkout v7.0.1, setup-node v7, codecov v7, upload-artifact v7.0.1) and scorecard-action v2.4.0 → v2.4.4, all SHA-pinned.
+- ci: pin `pip install ruff==0.16.2` by hash (`--require-hashes`) and drop the `npm install` fallback so Pinned-Dependencies scores 10/10.
+
+### Fixed
+
+- ci: harden workflows for OpenSSF Scorecard (least-privilege permissions, pinned dependencies).
+
 ## [0.2.0] - 2026-08-13
 
 First tagged release. Stabilizes the public API (explicit prelude re-exports),
