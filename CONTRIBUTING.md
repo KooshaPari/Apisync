@@ -26,3 +26,5 @@ cargo doc --no-deps
 ## Code of Conduct
 
 Be respectful. By participating, you agree to uphold the project's code of conduct.
+
+<!-- code-review signal 6 -->
