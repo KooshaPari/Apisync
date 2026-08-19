@@ -64,7 +64,7 @@ See the [docs site](https://kooshapari.github.io/apisync/) for the full
 
 | Field          | Value                                          |
 | -------------- | ---------------------------------------------- |
-| Latest release | v0.2.0 (crates.io: `apisync`)                  |
+| Latest release | v0.2.9 (crates.io: `apisync`)                  |
 | License        | MIT OR Apache-2.0                              |
 | Focus          | Universal API toolkit (REST/GraphQL/WebSocket) |
 
