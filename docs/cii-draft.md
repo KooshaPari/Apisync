@@ -18,7 +18,7 @@ Submit at https://www.bestpractices.dev/en/projects/new — copy answers below.
 
 ## Reporting
 
-- **Bug reports:** GitHub Issues enabled, `SECURITY.md` defines disclosure → email `[TODO: maintainer email]` (replace placeholder), links to GHSA.
+- **Bug reports:** GitHub Issues enabled, `SECURITY.md` defines disclosure → email `security@apisync.dev` (fixed), links to GHSA.
 - **Vulnerability reporting:** `SECURITY.md` with disclosure timeline, `security-deep-scan.yml` + `security-audit.yml` (Trivy, CodeQL) daily.
 
 ## Quality
