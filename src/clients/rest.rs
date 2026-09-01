@@ -184,4 +184,45 @@ mod tests {
         let client = RestClient::new("https://api.example.com");
         let _dbg = format!("{:?}", client);
     }
+
+    #[test]
+    fn test_with_client() {
+        let req_client = reqwest::Client::new();
+        let client = RestClient::with_client(req_client, "https://api.test.com");
+        assert_eq!(client.base_url(), "https://api.test.com");
+        let _ = client.inner();
+    }
+
+    #[test]
+    fn test_with_timeout() {
+        let client = RestClient::with_timeout("https://api.test.com", Duration::from_secs(5));
+        assert_eq!(client.base_url(), "https://api.test.com");
+        let _ = client.inner();
+    }
+
+    #[test]
+    fn test_inner() {
+        let client = RestClient::new("https://api.example.com");
+        let inner = client.inner();
+        // Verify it returns a valid reqwest::Client reference by cloning it
+        let _cloned = inner.clone();
+    }
+    #[test]
+    fn test_url_nested_path() {
+        let client = RestClient::new("https://api.example.com/v1");
+        assert_eq!(client.url("/items"), "https://api.example.com/v1/items");
+    }
+
+    #[test]
+    fn test_url_empty_path() {
+        let client = RestClient::new("https://api.example.com");
+        assert_eq!(client.url(""), "https://api.example.com");
+    }
+
+    #[test]
+    fn test_clone_preserves_url() {
+        let client = RestClient::new("https://api.example.com");
+        let cloned = client.clone();
+        assert_eq!(cloned.base_url(), client.base_url());
+    }
 }

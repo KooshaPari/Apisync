@@ -156,7 +156,104 @@ mod tests {
 
     #[test]
     fn test_ws_connection_is_debug() {
-        // Can't construct one without a server, but verify the type compiles.
         let _ = std::any::type_name::<WsConnection>();
+    }
+
+    #[test]
+    fn test_ws_message_update_roundtrip() {
+        let msg = WsMessage::UpdateItem {
+            id: 42,
+            name: Some("updated".to_string()),
+            description: Some("new desc".to_string()),
+        };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_update_partial_roundtrip() {
+        let msg = WsMessage::UpdateItem {
+            id: 7,
+            name: None,
+            description: Some("only desc".to_string()),
+        };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_delete_roundtrip() {
+        let msg = WsMessage::DeleteItem { id: 7 };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_item_created_roundtrip() {
+        let msg = WsMessage::ItemCreated {
+            item: crate::domain::Item { id: 10, name: "new".into(), description: "desc".into() },
+        };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_item_updated_roundtrip() {
+        let msg = WsMessage::ItemUpdated {
+            item: crate::domain::Item { id: 5, name: "upd".into(), description: "d".into() },
+        };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_item_deleted_roundtrip() {
+        let msg = WsMessage::ItemDeleted { id: 99 };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_error_roundtrip() {
+        let msg = WsMessage::Error { message: "something went wrong".into() };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_subscribe_roundtrip() {
+        let msg = WsMessage::Subscribe { topic: "items".into() };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_unsubscribe_roundtrip() {
+        let msg = WsMessage::Unsubscribe { topic: "items".into() };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_connected_roundtrip() {
+        let msg = WsMessage::Connected { client_id: 42 };
+        let json = serde_json::to_string(&msg).unwrap();
+        let back: WsMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(msg, back);
+    }
+
+    #[test]
+    fn test_ws_message_debug() {
+        let msg = WsMessage::GetItems;
+        let _dbg = format!("{:?}", msg);
     }
 }

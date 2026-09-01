@@ -167,4 +167,90 @@ mod tests {
         let client = GraphQlClient::new("https://api.example.com/graphql");
         let _dbg = format!("{:?}", client);
     }
+
+    #[test]
+    fn test_with_client() {
+        let req_client = reqwest::Client::new();
+        let client = GraphQlClient::with_client(req_client, "https://gql.test.com");
+        assert_eq!(client.endpoint(), "https://gql.test.com");
+        let _ = client.inner();
+    }
+
+    #[test]
+    fn test_inner() {
+        let client = GraphQlClient::new("https://api.example.com/graphql");
+        let inner = client.inner();
+        let _cloned = inner.clone();
+    }
+
+    #[test]
+    fn test_clone_preserves_endpoint() {
+        let client = GraphQlClient::new("https://api.example.com/graphql");
+        let cloned = client.clone();
+        assert_eq!(cloned.endpoint(), client.endpoint());
+    }
+
+    #[test]
+    fn test_request_serialization_basic() {
+        let req = GraphQlRequest {
+            query: "{ items { id } }",
+            variables: None,
+            operation_name: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("items { id }"));
+        assert!(!json.contains("variables"));
+        assert!(!json.contains("operationName"));
+    }
+
+    #[test]
+    fn test_request_serialization_with_vars() {
+        let req = GraphQlRequest {
+            query: "query GetItem($id: ID!) { item(id: $id) { name } }",
+            variables: Some(serde_json::json!({"id": "42"})),
+            operation_name: Some("GetItem"),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("query"));
+        assert!(json.contains("variables"));
+        assert!(json.contains("operationName"));
+    }
+
+    #[test]
+    fn test_graphql_response_deserialization() {
+        let json = r#"{"data": {"items": [{"id": "1"}]}, "errors": []}"#;
+        let resp: GraphQlResponse<serde_json::Value> = serde_json::from_str(json).unwrap();
+        assert!(resp.data.is_some());
+        assert!(resp.errors.is_empty());
+    }
+
+    #[test]
+    fn test_graphql_response_with_errors() {
+        let json = r#"{"data": null, "errors": [{"message": "not found"}, {"message": "unauthorized"}]}"#;
+        let resp: GraphQlResponse<serde_json::Value> = serde_json::from_str(json).unwrap();
+        assert!(resp.data.is_none());
+        assert_eq!(resp.errors.len(), 2);
+        assert_eq!(resp.errors[0].message, "not found");
+    }
+
+    #[test]
+    fn test_graphql_error_is_debug() {
+        let e = GraphQlError { message: "test error".into() };
+        let dbg = format!("{:?}", e);
+        assert!(dbg.contains("test error"));
+    }
+
+    #[test]
+    fn test_graphql_request_serialization_minimal() {
+        let req = GraphQlRequest {
+            query: "{ __typename }",
+            variables: None,
+            operation_name: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["query"], "{ __typename }");
+        assert!(parsed.get("variables").is_none());
+        assert!(parsed.get("operationName").is_none());
+    }
 }
