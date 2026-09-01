@@ -25,3 +25,6 @@ target
 **/mutants.out*/
 sbom.json
 sbom.intoto.jsonl
+
+# Local agent scratch (per-project sandbox)
+.sandbox/
